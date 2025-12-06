@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import path from 'path';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -16,10 +15,6 @@ export interface Config {
     botToken: string;
     webhookSecret: string;
     webhookUrl: string;
-  };
-  supabase: {
-    url: string;
-    serviceRoleKey: string;
   };
 }
 
@@ -50,10 +45,6 @@ export function loadConfig(): Config {
       botToken: requireEnv('TELEGRAM_BOT_TOKEN', process.env.TELEGRAM_BOT_TOKEN),
       webhookSecret: requireEnv('TELEGRAM_WEBHOOK_SECRET', process.env.TELEGRAM_WEBHOOK_SECRET),
       webhookUrl: requireEnv('TELEGRAM_WEBHOOK_URL', process.env.TELEGRAM_WEBHOOK_URL),
-    },
-    supabase: {
-      url: requireEnv('SUPABASE_URL', process.env.SUPABASE_URL),
-      serviceRoleKey: requireEnv('SUPABASE_SERVICE_ROLE_KEY', process.env.SUPABASE_SERVICE_ROLE_KEY),
     },
   };
 }

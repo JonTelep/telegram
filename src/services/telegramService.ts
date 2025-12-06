@@ -1,13 +1,11 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { config } from '../config';
-import https from 'https';
-import http from 'http';
 
 /**
- * Telegram service class providing bot operations and file downloads
+ * Telegram service class providing bot operations
  */
 export class TelegramService {
-  private bot: TelegramBot;
+  public bot: TelegramBot;
 
   constructor() {
     // Initialize bot without polling (webhook mode)
@@ -43,19 +41,11 @@ export class TelegramService {
 
   /**
    * Registers a handler for text messages
-   * @param pattern - Regex pattern or string to match
+   * @param pattern - Regex pattern to match
    * @param callback - Handler function
    */
-  onText(pattern: RegExp | string, callback: (msg: TelegramBot.Message, match: RegExpExecArray | null) => void): void {
+  onText(pattern: RegExp, callback: (msg: TelegramBot.Message, match: RegExpExecArray | null) => void): void {
     this.bot.onText(pattern, callback);
-  }
-
-  /**
-   * Registers a handler for photo messages
-   * @param callback - Handler function
-   */
-  onPhoto(callback: (msg: TelegramBot.Message) => void): void {
-    this.bot.on('photo', callback);
   }
 
   /**
@@ -70,60 +60,6 @@ export class TelegramService {
     options?: TelegramBot.SendMessageOptions
   ): Promise<TelegramBot.Message> {
     return this.bot.sendMessage(chatId, text, options);
-  }
-
-  /**
-   * Gets the download link for a file
-   * @param fileId - The Telegram file ID
-   * @returns The file download URL
-   */
-  async getFileLink(fileId: string): Promise<string> {
-    return this.bot.getFileLink(fileId);
-  }
-
-  /**
-   * Downloads a file from Telegram servers
-   * @param fileUrl - The file URL from getFileLink
-   * @returns Buffer containing the file data
-   */
-  async downloadFile(fileUrl: string): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-      const protocol = fileUrl.startsWith('https') ? https : http;
-
-      protocol.get(fileUrl, (response) => {
-        if (response.statusCode !== 200) {
-          reject(new Error(`Failed to download file: HTTP ${response.statusCode}`));
-          return;
-        }
-
-        const chunks: Buffer[] = [];
-
-        response.on('data', (chunk: Buffer) => {
-          chunks.push(chunk);
-        });
-
-        response.on('end', () => {
-          resolve(Buffer.concat(chunks));
-        });
-
-        response.on('error', (error) => {
-          reject(error);
-        });
-      }).on('error', (error) => {
-        reject(error);
-      });
-    });
-  }
-
-  /**
-   * Gets the highest resolution photo from a photo array
-   * @param photos - Array of PhotoSize objects
-   * @returns The largest photo
-   */
-  getHighestResolutionPhoto(photos: TelegramBot.PhotoSize[]): TelegramBot.PhotoSize {
-    return photos.reduce((prev, current) => {
-      return (prev.file_size || 0) > (current.file_size || 0) ? prev : current;
-    });
   }
 }
 

@@ -52,7 +52,7 @@ lint:
 
 # Podman commands
 podman-build:
-	podman build -t telegram-supabase-bridge .
+	podman build -t telegram-listener .
 
 # Run using podman-compose (requires: pip install podman-compose)
 podman-run:
@@ -62,7 +62,7 @@ podman-run:
 podman-run-native:
 	@echo "🚀 Starting container with Podman..."
 	podman run -d \
-		--name telegram-supabase-bridge \
+		--name telegram-listener \
 		-p 3000:3000 \
 		--env-file .env \
 		--restart unless-stopped \
@@ -71,7 +71,7 @@ podman-run-native:
 		--health-timeout=10s \
 		--health-retries=3 \
 		--health-start-period=10s \
-		telegram-supabase-bridge
+		telegram-listener
 	@echo "✅ Container started"
 	@echo "Check status with: podman ps"
 	@echo "View logs with: make podman-logs"
@@ -80,31 +80,31 @@ podman-stop:
 	@if command -v podman-compose >/dev/null 2>&1; then \
 		podman-compose down; \
 	else \
-		podman stop telegram-supabase-bridge 2>/dev/null || true; \
-		podman rm telegram-supabase-bridge 2>/dev/null || true; \
+		podman stop telegram-listener 2>/dev/null || true; \
+		podman rm telegram-listener 2>/dev/null || true; \
 	fi
 
 podman-logs:
-	@if podman ps -a --format "{{.Names}}" | grep -q "telegram-supabase-bridge"; then \
-		podman logs -f telegram-supabase-bridge; \
+	@if podman ps -a --format "{{.Names}}" | grep -q "telegram-listener"; then \
+		podman logs -f telegram-listener; \
 	else \
-		podman-compose logs -f telegram-bot 2>/dev/null || echo "Container not running"; \
+		podman-compose logs -f telegram-listener 2>/dev/null || echo "Container not running"; \
 	fi
 
 podman-restart:
-	@if podman ps -a --format "{{.Names}}" | grep -q "telegram-supabase-bridge"; then \
-		podman restart telegram-supabase-bridge; \
+	@if podman ps -a --format "{{.Names}}" | grep -q "telegram-listener"; then \
+		podman restart telegram-listener; \
 	else \
 		podman-compose restart 2>/dev/null || echo "Container not found"; \
 	fi
 
 podman-shell:
-	podman exec -it telegram-supabase-bridge sh
+	podman exec -it telegram-listener sh
 
 podman-clean:
-	podman stop telegram-supabase-bridge 2>/dev/null || true
-	podman rm telegram-supabase-bridge 2>/dev/null || true
-	podman rmi telegram-supabase-bridge 2>/dev/null || true
+	podman stop telegram-listener 2>/dev/null || true
+	podman rm telegram-listener 2>/dev/null || true
+	podman rmi telegram-listener 2>/dev/null || true
 
 # Generic container commands (alias to Podman)
 container-build: podman-build

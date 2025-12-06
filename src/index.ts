@@ -2,8 +2,7 @@ import Fastify from 'fastify';
 import TelegramBot from 'node-telegram-bot-api';
 import { config } from './config';
 import { telegramService } from './services/telegramService';
-import { handleAddProduct } from './handlers/productHandler';
-import { handleUpdateOrder } from './handlers/orderHandler';
+import { handleTextMessage, handlePhotoMessage } from './handlers/messageHandler';
 
 /**
  * Creates and configures the Fastify server
@@ -25,7 +24,7 @@ async function createServer() {
   });
 
   // Health check endpoint
-  fastify.get('/health', async (request, reply) => {
+  fastify.get('/health', async () => {
     return { status: 'ok', timestamp: new Date().toISOString() };
   });
 
@@ -68,51 +67,26 @@ async function createServer() {
  * Registers all Telegram bot message handlers
  */
 function registerBotHandlers() {
-  // Handler for photo messages with /add_product command
-  telegramService.onPhoto(async (msg) => {
-    if (msg.caption && msg.caption.toLowerCase().startsWith('/add_product')) {
-      await handleAddProduct(msg);
-    }
-  });
+  // Log all text messages
+  telegramService.bot.on('text', handleTextMessage);
 
-  // Handler for /update_order command
-  telegramService.onText(/^\/update_order/, handleUpdateOrder);
+  // Log all photo messages
+  telegramService.bot.on('photo', handlePhotoMessage);
 
-  // Handler for /start command (welcome message)
+  // Handle /start command
   telegramService.onText(/^\/start/, async (msg) => {
-    const chatId = msg.chat.id;
-    const welcomeMessage = `👋 Welcome to the Telegram-Supabase Bridge Bot!\n\n` +
-      `📦 Available Commands:\n\n` +
-      `📸 /add_product - Add a new product\n` +
-      `   Send a photo with caption:\n` +
-      `   /add_product\n` +
-      `   Name: Product Name\n` +
-      `   Price: 99.99\n` +
-      `   Description: Product description\n\n` +
-      `📮 /update_order - Update order status\n` +
-      `   Format: /update_order <order_number> <status> [tracking=<tracking_number>]\n` +
-      `   Example: /update_order 123 shipped tracking=1Z999999\n\n` +
-      `ℹ️ /help - Show this help message`;
-
-    await telegramService.sendMessage(chatId, welcomeMessage);
+    await telegramService.sendMessage(
+      msg.chat.id,
+      'Hello! I am listening to your messages. Check the console logs.'
+    );
   });
 
-  // Handler for /help command
+  // Handle /help command
   telegramService.onText(/^\/help/, async (msg) => {
-    const chatId = msg.chat.id;
-    const helpMessage = `📚 Help - Telegram-Supabase Bridge\n\n` +
-      `This bot allows you to manage products and orders through Telegram.\n\n` +
-      `📸 Add Product:\n` +
-      `1. Send a photo of the product\n` +
-      `2. Add a caption starting with /add_product\n` +
-      `3. Include Name, Price, and Description fields\n\n` +
-      `📮 Update Order:\n` +
-      `1. Use the command: /update_order <order_number> <status>\n` +
-      `2. Optionally add tracking: tracking=<tracking_number>\n` +
-      `3. The customer will be notified via email\n\n` +
-      `❓ Need more help? Contact support.`;
-
-    await telegramService.sendMessage(chatId, helpMessage);
+    await telegramService.sendMessage(
+      msg.chat.id,
+      'Send me any message and I will log it to the console.'
+    );
   });
 
   console.log('✅ Bot message handlers registered');
@@ -123,7 +97,7 @@ function registerBotHandlers() {
  */
 async function main() {
   try {
-    console.log('🚀 Starting Telegram-Supabase Bridge Microservice...');
+    console.log('🚀 Starting Telegram Listener Microservice...');
     console.log(`📍 Environment: ${config.server.env}`);
     console.log(`🔌 Port: ${config.server.port}`);
 
