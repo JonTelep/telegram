@@ -78,9 +78,22 @@ TELEGRAM_WEBHOOK_URL=https://your-domain.com/api/webhook
 
 **Security Note**: Generate a strong random secret for `TELEGRAM_WEBHOOK_SECRET`:
 
+#### Openssl
+```bash
+openssl rand -hex 32
+```
+
+#### Node
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
+
+### Ngrok
+Using ngrok for webhook run the following
+```bash
+ngrok http 3000
+```
+
 
 ### 3. Build and Run
 
